@@ -1,0 +1,89 @@
+==========================================================================
+SMMA CROSSOVER QUALITY MODEL — TRAINING REPORT
+==========================================================================
+Generated       : 2026-08-12 13:49:58 IST
+Data source     : SIMULATED
+History         : ~3 months of 1-minute candles
+Symbols         : 40
+Crossovers      : 3472  (BUY 1750 /
+                  SELL 1722)
+Train / test    : 2777 / 695  (chronological 80/20 split)
+Label           : +1.0% before -0.7% within 30 bars
+Positive rate   : 0.372 overall, 0.380 in the test window
+
+!! TRAINED ON SIMULATED DATA — no broker credentials were available.
+!! The pipeline is real; these numbers describe a synthetic
+!! regime-switching price process, NOT the NSE. Re-run with
+!! MODE=live and valid credentials to train on real history.
+
+--------------------------------------------------------------------------
+HEADLINE COMPARISON  (test window)
+--------------------------------------------------------------------------
+Baseline — take EVERY crossover      : 37.99% win rate  (n=695)
+Model    — take when p >= 0.55       : n/a (no signals)  (n=0)
+Improvement                          : n/a
+Signal coverage (share taken)        : 0.00%
+
+ROC AUC                              : 0.6064      (0.50 = no skill)
+Brier score (lower is better)        : 0.2322
+Predicted probability range          : 0.322 – 0.430
+                                       (median 0.369)
+
+--------------------------------------------------------------------------
+THRESHOLD SWEEP  (the headline number above is one row of this table)
+--------------------------------------------------------------------------
+  thr         n  coverage    win rate    vs baseline
+ 0.35       549      79.0%       40.62%        +2.63
+ 0.40        73      10.5%       45.21%        +7.22
+ 0.45         0        0.0%            —             —
+ 0.50         0        0.0%            —             —
+ 0.55         0        0.0%            —             —
+ 0.60         0        0.0%            —             —
+
+Cut-points implied by this model's own distribution:
+    ml.take_threshold    : 0.40   (top decile, 45.21% win rate)
+    ml.caution_threshold : 0.37
+The shipped config.yaml keeps the generic 0.60 / 0.45 defaults; swap in the
+values above if you want the dashboard's verdict bands centred on this model.
+
+--------------------------------------------------------------------------
+CLASSIFICATION REPORT  (threshold 0.50)
+--------------------------------------------------------------------------
+              precision    recall  f1-score   support
+
+        fail       0.62      1.00      0.77       431
+         win       0.00      0.00      0.00       264
+
+    accuracy                           0.62       695
+   macro avg       0.31      0.50      0.38       695
+weighted avg       0.38      0.62      0.47       695
+
+--------------------------------------------------------------------------
+FEATURE IMPORTANCE  (LightGBM split gain)
+--------------------------------------------------------------------------
+smma_gap_pct                     701
+body_ratio                       678
+volume_surge                     631
+atr_pct                          626
+dist_from_vwap_pct               609
+adx_14                           606
+minutes_since_open               570
+smma20_slope                     419
+smma120_slope                    345
+crossovers_last_60_bars           64
+
+--------------------------------------------------------------------------
+HOW TO READ THIS
+--------------------------------------------------------------------------
+The model does not predict price. It predicts whether a crossover that has
+already fired will reach +1.0% before -0.7%. Its value is in declining
+signals, not in finding winners.
+
+Probabilities are calibrated with CalibratedClassifierCV(sigmoid), so "0.42"
+should mean roughly a 42% hit rate over many signals — the Brier score above
+is the check on that claim. A consequence worth stating plainly: because the
+base rate here is 38%, a correctly calibrated model SHOULD rarely emit
+0.60+. Seeing mostly CAUTION and AVOID verdicts in the dashboard is the
+calibration working, not a bug. The runtime cut-points live in config.yaml
+under `ml.take_threshold` / `ml.caution_threshold` if you want to re-centre
+them on this base rate.

@@ -1,0 +1,26 @@
+# Python 3.11
+# Install:  pip install -r requirements.txt
+
+# --- Web ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# --- Broker / auth ---
+smartapi-python==1.5.5
+pyotp==2.9.0
+requests==2.32.3
+
+# --- Data ---
+pandas==2.2.3
+numpy==1.26.4
+pyarrow==17.0.0          # parquet cache for the training script
+
+# --- ML ---
+lightgbm==4.5.0
+scikit-learn==1.5.2
+shap==0.46.0
+joblib==1.4.2
+
+# --- Config ---
+python-dotenv==1.0.1
+PyYAML==6.0.2

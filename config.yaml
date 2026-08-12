@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------
+# NSE Real-Time Stock Screener — runtime configuration.
+# Anything secret lives in .env, never here.
+# ---------------------------------------------------------------------------
+
+screener:
+  # A stock must trade inside this price band to be screened in.
+  min_price: 30.0
+  max_price: 500.0
+  # ...and must show real depth on BOTH sides of the book.
+  min_total_buy_qty: 1000000
+  min_total_sell_qty: 1000000
+
+poll:
+  # Mock data is free, so we refresh it fast enough that the UI visibly moves.
+  interval_seconds_mock: 2
+  # Live mode is throttled well inside Angel's published rate limits.
+  interval_seconds_live: 5
+  # getMarketData FULL mode accepts a maximum of 50 tokens per request.
+  batch_size: 50
+  # Deliberate pause between batches so we stay under the 1 req/sec quote limit.
+  batch_sleep_seconds: 1.1
+  # Historical-candle warm-up is spread across cycles so the first poll is not
+  # blocked by one getCandleData call per symbol.
+  warmup_per_cycle_mock: 40
+  # Each warm-up is one throttled getCandleData call, so this many symbols adds
+  # roughly `value * batch_sleep_seconds` to a cycle. Screening all of NSE means
+  # a few hundred survivors to warm, which takes several cycles to work through.
+  warmup_per_cycle_live: 8
+  # Backoff on API failure: sleep = base * 2**attempt, capped.
+  retry_attempts: 3
+  retry_base_seconds: 1.0
+  retry_max_seconds: 20.0
+
+universe:
+  # 0 = screen every NSE -EQ instrument (~2000 symbols).
+  #
+  # Be aware of the arithmetic: getMarketData FULL accepts 50 tokens per call
+  # and Angel allows ~1 quote request per second, so a full sweep of ~2000
+  # symbols takes ~40-45s per cycle. That is an API rate limit, not a code
+  # limit. Set a number here (e.g. 300) if you want a faster refresh on a
+  # smaller watchlist; priority_symbols below are always kept first.
+  max_symbols: 0
+  # Re-download the Angel scrip master only if the cache is older than this.
+  refresh_hours: 24
+  # Symbols listed here are always kept when trimming to max_symbols.
+  priority_symbols:
+    - NATIONALUM-EQ
+    - YESBANK-EQ
+    - SUZLON-EQ
+    - IRFC-EQ
+    - PNB-EQ
+    - SAIL-EQ
+    - IOC-EQ
+    - NHPC-EQ
+    - BHEL-EQ
+    - TATASTEEL-EQ
+    - ONGC-EQ
+    - GAIL-EQ
+    - BANKBARODA-EQ
+    - CANBK-EQ
+    - NMDC-EQ
+    - ASHOKLEY-EQ
+    - FEDERALBNK-EQ
+    - RVNL-EQ
+    - IRCON-EQ
+    - HFCL-EQ
+
+indicators:
+  smma_fast: 20
+  smma_slow: 120
+  # How much intraday tick history to keep per symbol, in minutes.
+  sample_history_minutes: 90
+  # Traded-quantity lookback windows, in minutes.
+  volume_windows: [5, 20, 60]
+  # Average-LTP lookback windows, in minutes.
+  avg_price_windows: [20, 60]
+  # 1-minute candles pulled at startup to seed SMMA(120). ~375 bars per session.
+  warmup_days: 3
+
+ml:
+  model_path: data/model.pkl
+  take_threshold: 0.60
+  caution_threshold: 0.45
+  # Most recent crossover events retained in memory.
+  max_signals: 50
+
+mock:
+  symbol_count: 30
+  # Fixed seed => reproducible demos.
+  seed: 7
+
+server:
+  host: 127.0.0.1
+  port: 8000

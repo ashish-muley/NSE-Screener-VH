@@ -1,0 +1,28 @@
+# --- Secrets: never commit real credentials ---
+.env
+.env.local
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Generated / cached data ---
+data/cache/
+data/universe.json
+data/*.log
+
+# --- Editors / OS ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
